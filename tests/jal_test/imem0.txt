@@ -1,0 +1,32 @@
+; JAL Test - verifies JAL: R15 = pc+1, pc = R[rd][9:0]
+;
+; Strategy:
+; 1. Set R2 = 6 (target address)
+; 2. JAL R2 at PC=1 -> should set R15 = 2 (pc+1), jump to PC=6
+; 3. Delay slot at PC=2 always executes (sets R3 = 0x11)
+; 4. At PC=6, set R4 = 0x42 to confirm we got there
+; 5. Verify R15 = 2, R3 = 0x11, R4 = 0x42
+
+; Instruction format: opcode[31:24] rd[23:20] rs[19:16] rt[15:12] imm[11:0]
+
+; PC=0: R2 = R0 + R1, imm=6 -> R2 = 6 (target)
+; (0<<24)|(2<<20)|(0<<16)|(1<<12)|0x006 = 0x00201006
+00201006
+; PC=1: JAL rd=R2 (opcode=15=0x0F)
+; R15 = PC+1 = 2, jump to R[rd][9:0] = R[2][9:0] = 6
+; (15<<24)|(2<<20)|(0<<16)|(0<<12)|0x000 = 0x0F200000
+0F200000
+; PC=2: Delay slot - R3 = R0 + R1, imm=0x11 -> R3 = 0x11
+; (0<<24)|(3<<20)|(0<<16)|(1<<12)|0x011 = 0x00301011
+00301011
+; PC=3: Should be skipped (set R5 = 0xBAD)
+00501BAD
+; PC=4: Should be skipped
+00501BAD
+; PC=5: NOP
+00000000
+; PC=6: Target - R4 = R0 + R1, imm=0x42 -> R4 = 0x42
+; (0<<24)|(4<<20)|(0<<16)|(1<<12)|0x042 = 0x00401042
+00401042
+; PC=7: HALT
+14000000

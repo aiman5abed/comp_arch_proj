@@ -1,0 +1,50 @@
+; =============================================================================
+; Test: mulparallel - Core 0
+; Result[0] = A[0,0]*B[0] + A[0,1]*B[1] + A[0,2]*B[2] + A[0,3]*B[3]
+; A row 0 at 0: [1,2,3,4], B at 16: [1,2,3,4]
+; Expected: 1*1 + 2*2 + 3*3 + 4*4 = 30 = 0x1E
+; =============================================================================
+; Format: opcode[31:24] rd[23:20] rs[19:16] rt[15:12] imm[11:0]
+; R1 = sign-extended immediate (always)
+; LW: rd = MEM[rs + rt], use rt=1 with imm for address offset
+
+; R2 = 0 (A row 0 base): ADD R2,R0,R1 imm=0
+00201000
+; R3 = MEM[R2+R1] where imm=0: A[0,0]=1 - LW R3,R2,R1 imm=0
+10321000
+; R4 = 16 (B base): ADD R4,R0,R1 imm=16
+00401010
+; R5 = MEM[R4+R1] where imm=0: B[0]=1 - LW R5,R4,R1 imm=0
+10541000
+; R6 = R3 * R5 = 1*1 = 1
+05635000
+; R3 = MEM[R2+R1] where imm=1: A[0,1]=2 - LW R3,R2,R1 imm=1
+10321001
+; R5 = MEM[R4+R1] where imm=1: B[1]=2 - LW R5,R4,R1 imm=1
+10541001
+; R7 = R3 * R5 = 2*2 = 4
+05735000
+; R6 = R6 + R7 = 5
+00667000
+; R3 = MEM[R2+R1] where imm=2: A[0,2]=3
+10321002
+; R5 = MEM[R4+R1] where imm=2: B[2]=3
+10541002
+; R7 = R3 * R5 = 3*3 = 9
+05735000
+; R6 = R6 + R7 = 14
+00667000
+; R3 = MEM[R2+R1] where imm=3: A[0,3]=4
+10321003
+; R5 = MEM[R4+R1] where imm=3: B[3]=4
+10541003
+; R7 = R3 * R5 = 4*4 = 16
+05735000
+; R6 = R6 + R7 = 30
+00667000
+; R8 = 256 (result base)
+00801100
+; MEM[R8+R1] = R6 where imm=0: store result[0]=30 - SW R6,R8,R1 imm=0
+11681000
+; HALT
+14000000

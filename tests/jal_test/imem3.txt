@@ -1,0 +1,2 @@
+; Core 3: immediate HALT
+14000000

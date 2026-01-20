@@ -1,0 +1,2 @@
+; Core 3 halts immediately (opcode 20 = 0x14)
+14000000

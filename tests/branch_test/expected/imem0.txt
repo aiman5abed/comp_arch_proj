@@ -1,0 +1,38 @@
+; Branch Test - verifies branch target uses R[rd][9:0]
+; Tests: BEQ taken, BNE not taken, target truncation
+;
+; Strategy:
+; 1. Set R2 = 0x408 (target with high bits set: 0x400 | 8 = PC 8)
+; 2. Set R3 = 5, R4 = 5 (for BEQ condition rs==rt)
+; 3. BEQ R2, R3, R4  -> branch taken, PC should become 8 (low 10 bits of 0x408)
+; 4. If branch works, we skip to PC=8 and set R5 = 0x42
+; 5. If branch failed, R5 stays 0
+
+; Instruction format: opcode[31:24] rd[23:20] rs[19:16] rt[15:12] imm[11:0]
+
+; PC=0: R2 = R0 + R1, imm=0x408 -> R2 = 0x408 (target with upper bits)
+; (0<<24)|(2<<20)|(0<<16)|(1<<12)|0x408 = 0x00201408
+00201408
+; PC=1: R3 = R0 + R1, imm=5 -> R3 = 5
+; (0<<24)|(3<<20)|(0<<16)|(1<<12)|0x005 = 0x00301005
+00301005
+; PC=2: R4 = R0 + R1, imm=5 -> R4 = 5
+; (0<<24)|(4<<20)|(0<<16)|(1<<12)|0x005 = 0x00401005
+00401005
+; PC=3: BEQ rd=R2, rs=R3, rt=R4 (if R[rs]==R[rt], pc = R[rd][9:0] = 8)
+; (9<<24)|(2<<20)|(3<<16)|(4<<12)|0x000 = 0x09234000
+09234000
+; PC=4: (delay slot) NOP - ADD R0, R0, R0
+00000000
+; PC=5: If branch failed, set R5 = 0xBAD
+; (0<<24)|(5<<20)|(0<<16)|(1<<12)|0xBAD = 0x00501BAD
+00501BAD
+; PC=6: HALT
+14000000
+; PC=7: NOP (filler)
+00000000
+; PC=8: Branch target - set R5 = 0x42
+; (0<<24)|(5<<20)|(0<<16)|(1<<12)|0x042 = 0x00501042
+00501042
+; PC=9: HALT
+14000000

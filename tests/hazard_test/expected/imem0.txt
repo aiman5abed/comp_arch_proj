@@ -1,0 +1,21 @@
+; Hazard Test - verifies regfile timing (write in cycle N visible in N+1)
+; and proper stalling without forwarding
+;
+; Strategy:
+; 1. Write R2 = 5
+; 2. Immediately use R2 in next instruction -> must stall
+; 3. Result should be correct (R3 = R2 + 1 = 6)
+
+; Instruction format: opcode[31:24] rd[23:20] rs[19:16] rt[15:12] imm[11:0]
+
+; PC=0: R2 = R0 + R1, imm=5 -> R2 = 5
+; (0<<24)|(2<<20)|(0<<16)|(1<<12)|0x005 = 0x00201005
+00201005
+; PC=1: R3 = R2 + R1, imm=1 -> R3 = R2 + 1 = 6 (RAW hazard, must stall)
+; (0<<24)|(3<<20)|(2<<16)|(1<<12)|0x001 = 0x00321001
+00321001
+; PC=2: R4 = R3 + R1, imm=1 -> R4 = R3 + 1 = 7 (RAW hazard)
+; (0<<24)|(4<<20)|(3<<16)|(1<<12)|0x001 = 0x00431001
+00431001
+; PC=3: HALT
+14000000

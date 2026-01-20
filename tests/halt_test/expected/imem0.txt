@@ -1,0 +1,15 @@
+; HALT Test - verifies HALT opcode = 20 (0x14)
+; Core 0: R2 = 1, R3 = 2, HALT
+; Expected: R2=1, R3=2, simulation ends after pipeline drains
+
+; Instruction format: opcode[31:24] rd[23:20] rs[19:16] rt[15:12] imm[11:0]
+; R1 = sign-extended immediate in decode
+
+; PC=0: R2 = R0 + R1, imm=1 -> R2 = 0 + 1 = 1
+; (0<<24)|(2<<20)|(0<<16)|(1<<12)|0x001 = 0x00201001
+00201001
+; PC=1: R3 = R0 + R1, imm=2 -> R3 = 0 + 2 = 2
+; (0<<24)|(3<<20)|(0<<16)|(1<<12)|0x002 = 0x00301002
+00301002
+; PC=2: HALT (opcode=20=0x14)
+14000000
